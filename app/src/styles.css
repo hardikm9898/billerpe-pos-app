@@ -1,0 +1,257 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@import "../node_modules/@fontsource/archivo/400.css";
+@import "../node_modules/@fontsource/archivo/600.css";
+@import "../node_modules/@fontsource/archivo/700.css";
+@import "../node_modules/@fontsource/archivo/800.css";
+@import "../node_modules/@fontsource/manrope/400.css";
+@import "../node_modules/@fontsource/manrope/500.css";
+@import "../node_modules/@fontsource/manrope/600.css";
+@import "../node_modules/@fontsource/manrope/700.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * BillerPe POS design system.
+ * Brand red #C5202B, warm off-white surface, Archivo headings + Manrope body.
+ * All colours are tokens; never hardcode colour utilities in components.
+ */
+
+@theme inline {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+  --radius-3xl: 26px;
+  --radius-4xl: 30px;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  --color-status-free: var(--status-free);
+  --color-status-free-soft: var(--status-free-soft);
+  --color-status-running: var(--status-running);
+  --color-status-running-soft: var(--status-running-soft);
+  --color-status-hold: var(--status-hold);
+  --color-status-hold-soft: var(--status-hold-soft);
+  --color-status-billed: var(--status-billed);
+  --color-status-billed-soft: var(--status-billed-soft);
+  --color-status-reserved: var(--status-reserved);
+  --color-status-reserved-soft: var(--status-reserved-soft);
+  --color-status-ready: var(--status-ready);
+  --color-status-ready-soft: var(--status-ready-soft);
+  --color-veg: var(--veg);
+  --color-nonveg: var(--nonveg);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --shadow-soft: 0 1px 2px oklch(0.25 0.03 30 / 0.06), 0 8px 24px oklch(0.25 0.03 30 / 0.06);
+  --shadow-sheet: 0 -8px 40px oklch(0.25 0.03 30 / 0.12);
+}
+
+:root {
+  --radius: 14px;
+
+  --background: oklch(0.977 0.005 70);
+  --foreground: oklch(0.226 0.019 33);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.226 0.019 33);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.226 0.019 33);
+
+  --primary: oklch(0.505 0.196 24.5);
+  --primary-foreground: oklch(0.99 0.004 70);
+  --primary-soft: oklch(0.951 0.019 18);
+  --primary-soft-foreground: oklch(0.39 0.153 24);
+
+  --secondary: oklch(0.962 0.008 60);
+  --secondary-foreground: oklch(0.226 0.019 33);
+  --muted: oklch(0.962 0.008 60);
+  --muted-foreground: oklch(0.545 0.018 35);
+  --accent: oklch(0.951 0.019 18);
+  --accent-foreground: oklch(0.39 0.153 24);
+
+  --destructive: oklch(0.505 0.196 24.5);
+  --destructive-foreground: oklch(0.99 0.004 70);
+
+  --border: oklch(0.928 0.008 55);
+  --input: oklch(0.928 0.008 55);
+  --ring: oklch(0.505 0.196 24.5);
+
+  /* Table states: the Web POS palette, so both plans look the same
+     (Free light grey, Hold grey, Running light red, Bill generated yellow,
+     Reserved light blue). -soft = the card fill, plain = its text. */
+  --status-free: oklch(0.459 0.012 261.8);
+  --status-free-soft: oklch(0.968 0.004 247.9);
+  --status-running: #941820;
+  --status-running-soft: #faeced;
+  --status-hold: oklch(0.42 0.012 261.8);
+  --status-hold-soft: oklch(0.931 0.003 264.5);
+  --status-billed: oklch(0.481 0.108 87.2);
+  --status-billed-soft: oklch(0.954 0.054 94.7);
+  --status-reserved: oklch(0.443 0.08 250.6);
+  --status-reserved-soft: oklch(0.923 0.022 250.2);
+  --status-ready: oklch(0.52 0.13 150);
+  --status-ready-soft: oklch(0.95 0.04 150);
+  --veg: oklch(0.52 0.13 150);
+  --nonveg: oklch(0.505 0.196 24.5);
+
+  --chart-1: oklch(0.505 0.196 24.5);
+  --chart-2: oklch(0.63 0.15 70);
+  --chart-3: oklch(0.52 0.15 250);
+  --chart-4: oklch(0.52 0.13 150);
+  --chart-5: oklch(0.5 0.17 300);
+
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.226 0.019 33);
+  --sidebar-primary: oklch(0.505 0.196 24.5);
+  --sidebar-primary-foreground: oklch(0.99 0.004 70);
+  --sidebar-accent: oklch(0.951 0.019 18);
+  --sidebar-accent-foreground: oklch(0.39 0.153 24);
+  --sidebar-border: oklch(0.928 0.008 55);
+  --sidebar-ring: oklch(0.505 0.196 24.5);
+}
+
+.dark {
+  --background: oklch(0.18 0.012 33);
+  --foreground: oklch(0.96 0.006 70);
+  --card: oklch(0.235 0.014 33);
+  --card-foreground: oklch(0.96 0.006 70);
+  --popover: oklch(0.235 0.014 33);
+  --popover-foreground: oklch(0.96 0.006 70);
+
+  --primary: oklch(0.62 0.19 24.5);
+  --primary-foreground: oklch(0.99 0.004 70);
+  --primary-soft: oklch(0.31 0.07 22);
+  --primary-soft-foreground: oklch(0.92 0.04 22);
+
+  --secondary: oklch(0.29 0.014 33);
+  --secondary-foreground: oklch(0.96 0.006 70);
+  --muted: oklch(0.29 0.014 33);
+  --muted-foreground: oklch(0.72 0.014 40);
+  --accent: oklch(0.31 0.07 22);
+  --accent-foreground: oklch(0.92 0.04 22);
+
+  --destructive: oklch(0.62 0.19 24.5);
+  --destructive-foreground: oklch(0.99 0.004 70);
+
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.62 0.19 24.5);
+
+  --status-free: oklch(0.74 0.012 262);
+  --status-free-soft: oklch(0.27 0.006 260);
+  --status-running: oklch(0.74 0.15 22);
+  --status-running-soft: oklch(0.32 0.08 22);
+  --status-hold: oklch(0.8 0.01 262);
+  --status-hold-soft: oklch(0.34 0.01 262);
+  --status-billed: oklch(0.86 0.12 92);
+  --status-billed-soft: oklch(0.36 0.07 90);
+  --status-reserved: oklch(0.8 0.08 250);
+  --status-reserved-soft: oklch(0.34 0.05 250);
+  --status-ready: oklch(0.72 0.14 150);
+  --status-ready-soft: oklch(0.3 0.06 150);
+  --veg: oklch(0.72 0.14 150);
+  --nonveg: oklch(0.65 0.19 24.5);
+
+  --sidebar: oklch(0.235 0.014 33);
+  --sidebar-foreground: oklch(0.96 0.006 70);
+  --sidebar-primary: oklch(0.62 0.19 24.5);
+  --sidebar-primary-foreground: oklch(0.99 0.004 70);
+  --sidebar-accent: oklch(0.31 0.07 22);
+  --sidebar-accent-foreground: oklch(0.92 0.04 22);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.62 0.19 24.5);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@utility num {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+@utility tap {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
