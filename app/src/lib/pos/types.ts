@@ -905,6 +905,13 @@ export interface SupportTicket {
   kind: "support" | "plan-change" | "renewal";
   at: string;
   status: "open" | "closed";
+  /** Since the BillerPe support queue: the ticket number and the conversation. */
+  number?: string;
+  state?: "new" | "open" | "waiting" | "closed";
+  stateLabel?: string;
+  canReply?: boolean;
+  resolution?: string;
+  messages?: { id: string; from: "you" | "billerpe"; body: string; at: string }[];
 }
 
 export interface Subscription {

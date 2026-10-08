@@ -557,6 +557,16 @@ export class MockBackend implements PosBackend {
       core.audit(c, "Profile", "Changed password");
     });
 
+  ticketReply: PosBackend["ticketReply"] = (ticketId, text) =>
+    this.run((c) => {
+      const t = c.db.tickets.find((x) => x.id === ticketId);
+      if (!t) throw new core.RuleError("Ticket not found");
+      if (t.status === "closed") throw new core.RuleError("This ticket is closed. Raise a new ticket if the problem is back.");
+      if (!text.trim()) throw new core.RuleError("Type your reply first");
+      t.messages = [...(t.messages ?? []), { id: `m${Date.now()}`, from: "you", body: text.trim(), at: core.iso(c) }];
+      if (t.state === "waiting") t.state = "open";
+    });
+
   raiseTicket: PosBackend["raiseTicket"] = (subject, body, kind) =>
     this.run((c) => {
       if (!subject.trim()) throw new core.RuleError("Add a subject");

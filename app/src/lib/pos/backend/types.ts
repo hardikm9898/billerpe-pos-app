@@ -568,5 +568,7 @@ export interface PosBackend {
     body: string,
     kind: SupportTicket["kind"],
   ): Promise<Result<{ ticketId: string }>>;
+  /** Answer BillerPe support on a ticket. */
+  ticketReply(ticketId: string, text: string): Promise<Result>;
   markAlertsRead(ids: string[] | "all"): Promise<Result>;
 }

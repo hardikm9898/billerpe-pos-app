@@ -67,6 +67,10 @@ function HelpPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const tickets = pos.data?.tickets ?? [];
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [reply, setReply] = useState("");
+  const [replyError, setReplyError] = useState<string | null>(null);
+  const opened = tickets.find((t) => t.id === openId) ?? null;
 
   return (
     <AppShell title="Help & support">
@@ -118,19 +122,89 @@ function HelpPage() {
             <h2 className="font-display text-sm font-bold uppercase tracking-wide text-muted-foreground">
               Your tickets
             </h2>
-            {tickets.map((t) => (
-              <div key={t.id} className="rounded-lg border border-border bg-card p-3 text-sm">
-                <p className="font-semibold">
-                  {t.id} · {t.subject}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {dateTime(t.at)} · {t.status === "open" ? "Open" : "Closed"}
-                </p>
-              </div>
-            ))}
+            {tickets.map((t) => {
+              const replies = (t.messages ?? []).filter((m) => m.from === "billerpe").length;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    setOpenId(t.id);
+                    setReply("");
+                    setReplyError(null);
+                  }}
+                  className="tap block w-full rounded-lg border border-border bg-card p-3 text-left text-sm"
+                >
+                  <p className="font-semibold">
+                    {t.number ?? t.id} · {t.subject}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {dateTime(t.at)} · {t.stateLabel ?? (t.status === "open" ? "Open" : "Closed")}
+                  </p>
+                  {replies > 0 ? <p className="mt-1 text-xs font-semibold text-primary">BillerPe replied · tap to read</p> : null}
+                </button>
+              );
+            })}
           </section>
         ) : null}
       </div>
+      <ResponsiveSheet
+        open={!!opened}
+        onOpenChange={(o) => !o && setOpenId(null)}
+        title={opened ? `${opened.number ?? opened.id} · ${opened.subject}` : "Ticket"}
+        footer={
+          opened?.canReply ? (
+            <Button
+              className="tap w-full"
+              disabled={busy || !reply.trim()}
+              onClick={async () => {
+                if (!opened) return;
+                setBusy(true);
+                const r = await pos.act((b) => b.ticketReply(opened.id, reply));
+                setBusy(false);
+                if (r.ok) {
+                  setReply("");
+                  toast.success("Reply sent to BillerPe support");
+                } else setReplyError(r.error);
+              }}
+            >
+              {busy ? <Spinner /> : null} Send reply
+            </Button>
+          ) : undefined
+        }
+      >
+        {opened ? (
+          <div className="space-y-3 py-2">
+            <p className="text-xs text-muted-foreground">{opened.stateLabel ?? (opened.status === "open" ? "Open" : "Closed")}</p>
+            <ol className="space-y-2" aria-label="Conversation">
+              {(opened.messages?.length ? opened.messages : [{ id: "0", from: "you" as const, body: opened.body, at: opened.at }]).map((m) => (
+                <li key={m.id} className={m.from === "billerpe" ? "flex flex-col items-start" : "flex flex-col items-end"}>
+                  <div className={m.from === "billerpe" ? "max-w-[88%] rounded-2xl bg-primary/10 px-3 py-2" : "max-w-[88%] rounded-2xl bg-muted px-3 py-2"}>
+                    <p className="text-[11px] font-semibold text-muted-foreground">{m.from === "billerpe" ? "BillerPe support" : "You"}</p>
+                    <p className="whitespace-pre-wrap break-words text-sm">{m.body}</p>
+                  </div>
+                  <span className="mt-0.5 px-1 text-[11px] text-muted-foreground">{dateTime(m.at)}</span>
+                </li>
+              ))}
+            </ol>
+            {opened.canReply ? (
+              <Field label="Your reply">
+                <Textarea
+                  maxLength={4000}
+                  value={reply}
+                  onChange={(e) => {
+                    setReply(e.target.value);
+                    setReplyError(null);
+                  }}
+                />
+              </Field>
+            ) : (
+              <p className="text-xs text-muted-foreground">This ticket is closed. Raise a new ticket if the problem comes back.</p>
+            )}
+            <FormError error={replyError} />
+          </div>
+        ) : null}
+      </ResponsiveSheet>
       <ResponsiveSheet
         open={open}
         onOpenChange={setOpen}
@@ -144,7 +218,7 @@ function HelpPage() {
               const r = await pos.act((b) => b.raiseTicket(subject, body, "support"));
               setBusy(false);
               if (r.ok) {
-                toast.success(`Ticket ${r.ticketId} raised — we'll call you`);
+                toast.success(`Ticket T-${r.ticketId} raised. BillerPe replies here and on WhatsApp.`);
                 setOpen(false);
               } else setError(r.error);
             }}
