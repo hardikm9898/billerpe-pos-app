@@ -12,6 +12,8 @@ import {
 import { EMPTY_TOTALS, orderLines, previewTotals, resolveMenu } from "./bill";
 import {
   NetworkError,
+  PlanLockedError,
+  type PlanState,
   type DeviceInfo,
   type KotResult,
   type OutletData,
@@ -111,7 +113,7 @@ const API_BASE = (import.meta.env["VITE_API_BASE_URL"] as string | undefined)?.t
 const http = API_BASE ? createHttpBackend(API_BASE) : null;
 export const backend: PosBackend = http ?? new MockBackend();
 export const isMockBackend = !http;
-export const APP_VERSION = "1.0.0";
+export const APP_VERSION = "1.1.0";
 
 // On a phone the real printer driver; in the browser the simulated one.
 if (Capacitor.isNativePlatform()) setPrinterDriver(nativeDriver);
@@ -209,6 +211,13 @@ interface PosCtx {
   setLastSection: (id: string) => void;
   setAppLock: (on: boolean) => void;
 
+  /* the outlet's BillerPe plan (lock screen + grace banner) */
+  plan: PlanState | null;
+  planLocked: boolean;
+  refreshPlan: () => Promise<PlanState | null>;
+  extendPlan: () => Promise<{ ok: boolean; error?: string | undefined }>;
+  planPayLink: () => Promise<{ ok: boolean; url?: string | undefined; amount?: number | undefined; error?: string | undefined }>;
+
   /* drafts (this device's unsent carts) */
   draftKeyForTable: (tableId: string) => string;
   openDraft: (
@@ -269,6 +278,7 @@ export function PosProvider({ children }: { children: ReactNode }) {
   const [booting, setBooting] = useState(true);
   const [connection, setConnection] = useState<ConnectionState>("online");
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [plan, setPlan] = useState<PlanState | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [data, setData] = useState<OutletData | null>(null);
   // Empty carts left behind (opened a table, added nothing) are dropped on start.
@@ -292,6 +302,7 @@ export function PosProvider({ children }: { children: ReactNode }) {
         setSession(s);
         write(LS.session, s.token);
       };
+      http.onPlanLocked = (p) => setPlan(p ? { ...p, expired: true } : ({ outlet: "", endsAt: null, paidUntil: null, expired: true, inGrace: false, graceUsed: false, canExtend: false, daysLeft: null, message: null } as PlanState));
     }
   }, []);
 
@@ -336,8 +347,23 @@ export function PosProvider({ children }: { children: ReactNode }) {
       setConnection("online");
     } catch (e) {
       if (e instanceof NetworkError) setConnection("offline");
+      else if (e instanceof PlanLockedError) return;
       else if (e instanceof Error && /session/i.test(e.message)) setSessionExpired(true);
       else console.error(e);
+    }
+  }, []);
+
+  /** The plan as the cloud has it now (the demo backend has no plan). */
+  const refreshPlan = useCallback(async () => {
+    if (!http) return null;
+    try {
+      const r = (await http.call("planStatus", [])) as { ok: boolean } & Partial<PlanState>;
+      if (!r.ok) return null;
+      const { ok: _ok, ...p } = r;
+      setPlan(p as PlanState);
+      return p as PlanState;
+    } catch {
+      return null;
     }
   }, []);
 
@@ -349,6 +375,7 @@ export function PosProvider({ children }: { children: ReactNode }) {
         const r = await backend.resume(token, device.current);
         if (r.ok && r.session) {
           setSession(r.session);
+          await refreshPlan();
           await reload();
         } else if (r.error === "network") {
           setConnection("offline");
@@ -358,7 +385,14 @@ export function PosProvider({ children }: { children: ReactNode }) {
       }
       setBooting(false);
     })();
-  }, [reload]);
+  }, [reload, refreshPlan]);
+
+  // The plan's end can pass while the app is open: look again every 10 minutes.
+  useEffect(() => {
+    if (!session || !http) return;
+    const id = setInterval(() => void refreshPlan(), 600000);
+    return () => clearInterval(id);
+  }, [session, refreshPlan]);
 
   // Live updates: other phones' KOTs, the kitchen marking food ready, a QR
   // round... The cloud gives a cheap fingerprint of the outlet's state; the
@@ -383,6 +417,7 @@ export function PosProvider({ children }: { children: ReactNode }) {
         }
       } catch (e) {
         if (e instanceof NetworkError) setConnection("offline");
+        else if (e instanceof PlanLockedError) return;
         else if (e instanceof Error && /session/i.test(e.message)) setSessionExpired(true);
       } finally {
         busy = false;
@@ -415,13 +450,14 @@ export function PosProvider({ children }: { children: ReactNode }) {
       setSession(r.session);
       setSessionExpired(false);
       write(LS.session, r.session.token);
+      await refreshPlan();
       await reload();
       const shift = await backend.shiftStaff();
       setShift(shift);
       write(LS.shift, shift);
       return { ok: true };
     },
-    [reload],
+    [reload, refreshPlan],
   );
 
   const loginWithPassword = useCallback<PosCtx["loginWithPassword"]>(
@@ -440,6 +476,7 @@ export function PosProvider({ children }: { children: ReactNode }) {
     await backend.logout();
     setSession(null);
     setData(null);
+    setPlan(null);
     write(LS.session, null);
   }, []);
 
@@ -889,7 +926,34 @@ export function PosProvider({ children }: { children: ReactNode }) {
 
   /* ------------------------------ value ------------------------------ */
 
+  const extendPlan = useCallback<PosCtx["extendPlan"]>(async () => {
+    if (!http) return { ok: false, error: "Not on the demo." };
+    try {
+      const r = (await http.call("planExtend", [])) as { ok: boolean; error?: string; state?: PlanState };
+      if (!r.ok) return { ok: false, error: r.error };
+      if (r.state) setPlan(r.state);
+      await reload();
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e instanceof NetworkError ? "No internet connection" : "Something went wrong. Please try again." };
+    }
+  }, [reload]);
+
+  const planPayLink = useCallback<PosCtx["planPayLink"]>(async () => {
+    if (!http) return { ok: false, error: "Not on the demo." };
+    try {
+      return (await http.call("planPayLink", [])) as { ok: boolean; url?: string; amount?: number; error?: string };
+    } catch (e) {
+      return { ok: false, error: e instanceof NetworkError ? "No internet connection" : "Something went wrong. Please try again." };
+    }
+  }, []);
+
   const value: PosCtx = {
+    plan,
+    planLocked: !!plan?.expired,
+    refreshPlan,
+    extendPlan,
+    planPayLink,
     booting,
     connection,
     sessionExpired,

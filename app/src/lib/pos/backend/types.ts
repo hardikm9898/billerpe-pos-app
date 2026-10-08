@@ -65,6 +65,26 @@ export class NetworkError extends Error {
   }
 }
 
+/** The outlet's BillerPe plan has ended: everything is locked except the plan calls. */
+export class PlanLockedError extends Error {}
+
+/**
+ * The outlet's plan as the lock screen and banner show it (cloud
+ * adminv1/bil/renewals.js planState). Owner 2026-10-08: when the plan ends
+ * the app locks at once; "Extend 1 day" once; then only paying unlocks it.
+ */
+export interface PlanState {
+  outlet: string;
+  endsAt: string | null;
+  paidUntil: string | null;
+  expired: boolean;
+  inGrace: boolean;
+  graceUsed: boolean;
+  canExtend: boolean;
+  daysLeft: number | null;
+  message: string | null;
+}
+
 /** Everything the device holds for the signed-in outlet. */
 export interface OutletData {
   outlet: Outlet;

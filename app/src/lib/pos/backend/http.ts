@@ -1,6 +1,8 @@
 import {
   NetworkError,
+  PlanLockedError,
   type DeviceInfo,
+  type PlanState,
   type LoginResult,
   type PosBackend,
   type Result,
@@ -11,7 +13,9 @@ import {
 // One POST per PosBackend method, body { args: [...] }, answer
 // { ok: true, result } or { ok: false, error }. A dropped connection or a
 // timeout is a NetworkError (never a rule error); 401 means the session
-// ended (device logged out, staff switched off, plan changed).
+// ended (device logged out, staff switched off, plan changed); 402 with
+// code "plan-expired" means the outlet's BillerPe plan has ended (the app
+// shows its lock screen - onPlanLocked).
 
 const TIMEOUT_MS = 20000;
 const SESSION_ENDED = "Your session has ended. Please log in again.";
@@ -34,6 +38,7 @@ interface Wire {
   error?: string;
   message?: string;
   code?: string;
+  plan?: PlanState;
   result?: unknown;
   session?: Session;
 }
@@ -42,6 +47,8 @@ export class HttpBackend {
   private token: string | null = null;
   /** The store persists a new session (outlet switch) through this. */
   onSessionChange: ((s: Session) => void) | null = null;
+  /** The store shows the lock screen through this. */
+  onPlanLocked: ((plan: PlanState | null) => void) | null = null;
 
   constructor(private readonly base: string) {}
 
@@ -80,6 +87,12 @@ export class HttpBackend {
     if (status === 401) {
       if (DATA_CALLS.has(name)) throw new Error(SESSION_ENDED);
       return { ok: false, error: SESSION_ENDED };
+    }
+    if (status === 402 && json.code === "plan-expired") {
+      this.onPlanLocked?.(json.plan ?? null);
+      const msg = json.error || "Your BillerPe plan has ended.";
+      if (DATA_CALLS.has(name)) throw new PlanLockedError(msg);
+      return { ok: false, error: msg };
     }
     if (DATA_CALLS.has(name)) {
       if (!json.ok) throw new Error(json.error || "Something went wrong. Please try again.");
@@ -140,10 +153,16 @@ export class HttpBackend {
         signal: ctrl.signal,
       });
       if (res.status === 401) throw new Error(SESSION_ENDED);
+      if (res.status === 402) {
+        const j = (await res.json().catch(() => null)) as Wire | null;
+        this.onPlanLocked?.(j?.plan ?? null);
+        throw new PlanLockedError(j?.error || "Your BillerPe plan has ended.");
+      }
       const json = (await res.json()) as Wire;
       return String((json.result as { v?: string } | undefined)?.v ?? "");
     } catch (e) {
       if (e instanceof Error && e.message === SESSION_ENDED) throw e;
+      if (e instanceof PlanLockedError) throw e;
       throw new NetworkError();
     } finally {
       clearTimeout(timer);
@@ -159,6 +178,7 @@ const EXPLICIT = new Set([
   "selectOutlet",
   "version",
   "onSessionChange",
+  "onPlanLocked",
   "call",
   "then",
 ]);

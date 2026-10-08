@@ -11,6 +11,7 @@ import { useEffect, useRef } from "react";
 
 import { AlertNotifier } from "@/components/pos/AlertNotifier";
 import { AppLock } from "@/components/pos/AppLock";
+import { PlanBanner, PlanLockScreen } from "@/components/pos/PlanLock";
 import { Logo } from "@/components/pos/primitives";
 
 import { PosProvider, usePos } from "../lib/pos/store";
@@ -107,9 +108,12 @@ function AuthGate() {
   useEffect(() => {
     if (!isLogin && !pos.booting && !pos.session) void navigate({ to: "/", replace: true });
   }, [isLogin, pos.booting, pos.session, navigate]);
+  // The plan has ended: the lock screen, even before the outlet's data loads.
+  if (pos.session && pos.planLocked) return <PlanLockScreen />;
   if (isLogin || ready)
     return (
       <>
+        {ready && pos.plan?.inGrace ? <PlanBanner /> : null}
         <Outlet />
         {ready ? <AlertNotifier /> : null}
         {ready ? <AppLock lockAtStart={!loginSeen.current} /> : null}
