@@ -38,12 +38,12 @@ export function PlanLockScreen() {
   return (
     <div role="alertdialog" aria-label="BillerPe plan ended" className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-10 text-center">
       <Logo size={56} />
-      <h1 className="mt-6 text-2xl font-bold text-foreground">Your BillerPe plan has ended</h1>
+      <h1 className="mt-6 text-2xl font-bold text-foreground">{plan?.reason === "unpaid" ? "Your payment to BillerPe is pending" : "Your BillerPe plan has ended"}</h1>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">{plan?.message || "The app is locked until the plan is renewed."}</p>
       {plan?.outlet ? <p className="mt-1 text-sm font-semibold text-foreground">{plan.outlet}{plan.paidUntil ? ` · ended ${when(plan.paidUntil)}` : ""}</p> : null}
       <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
         <Button size="lg" disabled={!!busy} onClick={() => void run("pay", () => openPay(pos, setError))}>
-          {busy === "pay" ? <Spinner /> : <CreditCard className="size-5" />} Renew now (pay online)
+          {busy === "pay" ? <Spinner /> : <CreditCard className="size-5" />} {plan?.reason === "unpaid" ? "Pay now (online)" : "Renew now (pay online)"}
         </Button>
         {plan?.canExtend ? (
           <Button
