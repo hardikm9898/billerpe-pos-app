@@ -7,8 +7,8 @@ android {
         applicationId "com.billerpe.pos"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 9
-        versionName "1.2.1"
+        versionCode 10
+        versionName "1.2.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // Phones and Android POS terminals are ARM; x86 is only PC emulators.
         // Leaving it out saves ~12 MB of barcode-scanner native code.

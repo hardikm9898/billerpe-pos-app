@@ -12,13 +12,13 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";
 import { Capacitor } from "@capacitor/core";
 import { App as CapApp } from "@capacitor/app";
-import { StatusBar, Style } from "@capacitor/status-bar";
 import { initI18n } from "./lib/pos/i18n";
 import { router } from "./router";
 
 // Android hardware back: step back through the in-app history; from a root
 // screen (tables/login) background the app instead of popping to a blank view.
 if (Capacitor.isNativePlatform()) {
+  // Status / gesture bar colours: MainActivity (EdgeInsets.java), not the StatusBar plugin.
   void CapApp.addListener("backButton", () => {
     const path = router.history.location.pathname;
     if (
@@ -31,8 +31,6 @@ if (Capacitor.isNativePlatform()) {
       void CapApp.minimizeApp();
     else router.history.back();
   });
-  void StatusBar.setStyle({ style: Style.Light }).catch(() => {});
-  void StatusBar.setBackgroundColor({ color: "#ffffff" }).catch(() => {});
 }
 
 // The phone's language (Profile): Hindi / Gujarati are swapped in on screen.
