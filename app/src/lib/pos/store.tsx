@@ -113,7 +113,7 @@ const API_BASE = (import.meta.env["VITE_API_BASE_URL"] as string | undefined)?.t
 const http = API_BASE ? createHttpBackend(API_BASE) : null;
 export const backend: PosBackend = http ?? new MockBackend();
 export const isMockBackend = !http;
-export const APP_VERSION = "1.2.2";
+export const APP_VERSION = "1.2.3";
 
 // On a phone the real printer driver; in the browser the simulated one.
 if (Capacitor.isNativePlatform()) setPrinterDriver(nativeDriver);
