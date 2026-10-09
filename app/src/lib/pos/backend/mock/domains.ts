@@ -778,7 +778,7 @@ export function setUserOverrides(c: Ctx, staffId: string, p: Permissions | null)
 /* ------------------------------ settings ------------------------------ */
 
 const HARDWARE_KEYS: (keyof OutletSettings)[] = ["kitchens", "kotFormat"];
-const EXPERIENCE_KEYS: (keyof OutletSettings)[] = ["qrOrdering", "tableGridView"];
+const EXPERIENCE_KEYS: (keyof OutletSettings)[] = ["qrOrdering", "tableGridView", "billingPhotos"];
 
 export function updateSettings(c: Ctx, patch: Partial<OutletSettings>) {
   for (const k of Object.keys(patch) as (keyof OutletSettings)[]) {

@@ -1,8 +1,10 @@
-import { Camera, Plus, ScanBarcode, Trash2, X } from "lucide-react";
+import { Image as ImageIcon, Plus, ScanBarcode, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Field, FormError, readImage, SearchSelect, Segmented } from "@/components/pos/kit";
+import { Field, FormError, SearchSelect, Segmented } from "@/components/pos/kit";
+import { PhotoPickerSheet } from "@/components/pos/menu/Photos";
+import { photoSrc } from "@/lib/pos/photos";
 import { ResponsiveSheet } from "@/components/pos/ResponsiveSheet";
 import { Chip, NumberField, Spinner, VegMark } from "@/components/pos/primitives";
 import { Button } from "@/components/ui/button";
@@ -74,6 +76,7 @@ export function ItemSheet({
   const categories = data.categories.filter((c) => c.menuId === menuId);
   const variants = data.variants.filter((v) => v.menuId === menuId);
   const groups = data.addonGroups.filter((g) => g.menuId === menuId);
+  const [picking, setPicking] = useState(false);
   const [f, setF] = useState<Omit<MenuItem, "id">>(
     initial ?? {
       menuId,
@@ -140,30 +143,16 @@ export function ItemSheet({
       <div className="space-y-3 py-2">
         <div className="flex items-center gap-3">
           {f.imageUrl ? (
-            <img src={f.imageUrl} alt="" className="size-16 rounded-md object-cover" />
+            <img src={photoSrc(f.imageUrl)} alt="" className="size-16 rounded-md object-cover" />
           ) : (
             <span className="flex size-16 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">
               Photo
             </span>
           )}
-          <label className="tap inline-flex cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold">
-            <Camera className="size-4" /> {f.imageUrl ? "Change photo" : "Take / pick photo"}
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="sr-only"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                try {
-                  set({ imageUrl: await readImage(file) });
-                } catch (err) {
-                  setError((err as Error).message);
-                }
-              }}
-            />
-          </label>
+          {/* Photos come only from BillerPe's library (owner 2026-10-09): no camera, no uploads. */}
+          <Button variant="outline" className="tap" onClick={() => setPicking(true)}>
+            <ImageIcon className="size-4" /> {f.imageUrl ? "Change photo" : "Choose photo"}
+          </Button>
           {f.imageUrl ? (
             <Button
               variant="ghost"
@@ -175,6 +164,7 @@ export function ItemSheet({
             </Button>
           ) : null}
         </div>
+        <PhotoPickerSheet open={picking} onOpenChange={setPicking} itemName={f.name} menuId={initial?.id ?? null} onPick={(p) => set({ imageUrl: p.url })} />
         <Field label="Name *">
           <Input
             className="tap"

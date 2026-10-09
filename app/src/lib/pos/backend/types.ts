@@ -49,8 +49,7 @@ import type {
   TableSection,
   TaxRule,
   Variant,
-  Wastage,
-} from "../types";
+  Wastage, LibPhoto, PhotoMatch } from "../types";
 
 // The app <-> cloud contract. `PosBackend` lists every call the app makes;
 // uat-backend-v2's /app/v1 API implements the same list (see
@@ -572,5 +571,11 @@ export interface PosBackend {
   ): Promise<Result<{ ticketId: string }>>;
   /** Answer BillerPe support on a ticket. */
   ticketReply(ticketId: string, text: string): Promise<Result>;
+
+  /* menu photos: BillerPe's library, search and pick (owner 2026-10-09) */
+  photoFind(q: string, opts?: { veg?: string }): Promise<Result<{ matches: LibPhoto[]; related: LibPhoto[]; sure: number | null }>>;
+  photoMenu(all?: boolean): Promise<Result<{ items: PhotoMatch[]; total: number; withPhoto: number }>>;
+  photoSet(picks: { menuId: string; photoId: number | null }[]): Promise<Result<{ set: number }>>;
+  photoRequest(menuId: string | null, itemName: string): Promise<Result<{ requested: boolean; already: boolean }>>;
   markAlertsRead(ids: string[] | "all"): Promise<Result>;
 }

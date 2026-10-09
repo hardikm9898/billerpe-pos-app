@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, FileDown, FileUp, Plus, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, FileDown, FileUp, Image as ImageIcon, Plus, Search } from "lucide-react";
+import { MatchPhotosSheet } from "@/components/pos/menu/Photos";
+import { photoSrc } from "@/lib/pos/photos";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -55,6 +57,7 @@ function MenuPage() {
   const [group, setGroup] = useState<AddonGroup | "new" | null>(null);
   const [menuEdit, setMenuEdit] = useState<MenuCatalog | "new" | null>(null);
   const [csv, setCsv] = useState<"import" | "export" | null>(null);
+  const [matching, setMatching] = useState(false);
 
   const categories = data.categories
     .filter((c) => c.menuId === menuId)
@@ -132,6 +135,12 @@ function MenuPage() {
                 </Button>
               ) : null}
             </div>
+            {canEdit ? (
+              <Button variant="outline" className="tap" onClick={() => setMatching(true)}>
+                <ImageIcon className="size-4" /> Match photos
+              </Button>
+            ) : null}
+            <MatchPhotosSheet open={matching} onOpenChange={setMatching} />
             {/* Web POS menu CSV (owner bug list item 15). */}
             <div className="grid grid-cols-2 gap-2">
               {canCreate && canEdit ? (
@@ -182,7 +191,7 @@ function MenuPage() {
                     >
                       {i.imageUrl ? (
                         <img
-                          src={i.imageUrl}
+                          src={photoSrc(i.imageUrl)}
                           alt=""
                           className="size-12 shrink-0 rounded-md object-cover"
                         />

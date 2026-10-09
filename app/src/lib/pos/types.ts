@@ -505,6 +505,26 @@ export interface PrintFormat {
   footer: PrintLine[];
 }
 
+/** A photo from BillerPe's menu photo library (owner 2026-10-09). */
+export interface LibPhoto {
+  id: number;
+  name: string;
+  url: string;
+  thumb: string;
+  veg?: string;
+  score?: number;
+}
+/** "Match photos": an item without a photo and the library's suggestions. */
+export interface PhotoMatch {
+  menuId: number | string;
+  name: string;
+  category: string;
+  photo: string | null;
+  sure: boolean;
+  best: LibPhoto | null;
+  options: LibPhoto[];
+}
+
 export interface OutletSettings {
   /** GST master switch. */
   gstOn: boolean;
@@ -529,6 +549,8 @@ export interface OutletSettings {
    * section stacked under its heading ("sections") - the Web POS's Table grid
    * view, one choice for the whole outlet. */
   tableGridView: "tabs" | "sections";
+  /** Menu photos on the billing screens (owner 2026-10-09; on by default). */
+  billingPhotos: boolean;
   /** Record supplier (PO) payments as expenses. */
   supplierPaymentsAsExpense: boolean;
   /** What the owner is alerted about (owner only; all on, 20% by default). */

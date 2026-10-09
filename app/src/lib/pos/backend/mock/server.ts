@@ -557,6 +557,11 @@ export class MockBackend implements PosBackend {
       core.audit(c, "Profile", "Changed password");
     });
 
+  // The demo has no photo library: search finds nothing, Match photos suggests nothing.
+  photoFind: PosBackend["photoFind"] = async () => ({ ok: true, matches: [], related: [], sure: null });
+  photoMenu: PosBackend["photoMenu"] = async () => ({ ok: true, items: [], total: 0, withPhoto: 0 });
+  photoSet: PosBackend["photoSet"] = async () => ({ ok: true, set: 0 });
+  photoRequest: PosBackend["photoRequest"] = async () => ({ ok: true, requested: true, already: false });
   ticketReply: PosBackend["ticketReply"] = (ticketId, text) =>
     this.run((c) => {
       const t = c.db.tickets.find((x) => x.id === ticketId);

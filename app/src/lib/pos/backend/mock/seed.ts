@@ -411,6 +411,7 @@ const settings: OutletSettings = {
   cashSessionOn: true,
   qrOrdering: true,
   tableGridView: "tabs",
+  billingPhotos: true,
   supplierPaymentsAsExpense: true,
   ownerAlerts: { cancelAfterKot: true, bigDiscount: true, discountPct: 20, cashDifference: true },
 };

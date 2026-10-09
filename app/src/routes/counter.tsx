@@ -13,6 +13,7 @@ import {
 } from "@/components/pos/billing/SettleSheet";
 import { shareBillPdf, shareWhatsApp } from "@/components/pos/billing/share";
 import { CustomItemSheet, KotResultSheet, OptionsSheet } from "@/components/pos/ordering";
+import { ItemThumb } from "@/components/pos/menu/Photos";
 import { ResponsiveSheet } from "@/components/pos/ResponsiveSheet";
 import { Chip, EmptyState, QtyStepper, Spinner, VegMark } from "@/components/pos/primitives";
 import { Button } from "@/components/ui/button";
@@ -328,6 +329,9 @@ function CounterPage() {
                       i.outOfStock && "opacity-50",
                     )}
                   >
+                    {data.settings.billingPhotos ? (
+                      <ItemThumb name={i.name} url={i.imageUrl} className="-mx-3 -mt-3 mb-2 aspect-[16/10] max-w-none self-stretch rounded-t-lg text-2xl" />
+                    ) : null}
                     <div className="flex items-start gap-1.5">
                       <VegMark type={i.dietary} className="mt-1" />
                       <span className="text-sm font-semibold leading-tight">

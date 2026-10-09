@@ -204,7 +204,7 @@ function SettingsPage() {
           ) : null}
           <Group
             value="more"
-            title="Table grid, QR ordering, cash session, purchases"
+            title="Table grid, photos, QR ordering, cash session, purchases"
             sub="Switches"
           >
             <Field
@@ -233,6 +233,19 @@ function SettingsPage() {
                 disabled={!experience}
                 checked={s.qrOrdering}
                 onCheckedChange={(v) => void toggle({ qrOrdering: v })}
+              />
+            </label>
+            <label className="flex items-center justify-between gap-3 text-sm font-semibold">
+              <span>
+                Show photos while billing
+                <span className="block text-xs font-normal text-muted-foreground">
+                  Item photos on the billing screens, POS and Captain App.
+                </span>
+              </span>
+              <Switch
+                disabled={!experience}
+                checked={s.billingPhotos}
+                onCheckedChange={(v) => void toggle({ billingPhotos: v })}
               />
             </label>
             <label className="flex items-center justify-between gap-3 text-sm font-semibold">

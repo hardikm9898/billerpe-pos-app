@@ -26,6 +26,7 @@ import { ItemSearch } from "@/components/pos/ItemSearch";
 import { CustomItemSheet, KotResultSheet, OptionsSheet } from "@/components/pos/ordering";
 import { CustomerBar, CustomerSheet } from "@/components/pos/CustomerSheet";
 import { ResponsiveSheet } from "@/components/pos/ResponsiveSheet";
+import { ItemThumb } from "@/components/pos/menu/Photos";
 import {
   Chip,
   EmptyState,
@@ -565,6 +566,9 @@ function OrderPage() {
                         item.outOfStock && "opacity-55",
                       )}
                     >
+                      {data.settings.billingPhotos ? (
+                        <ItemThumb name={item.name} url={item.imageUrl} className="size-12 shrink-0 rounded-md text-base" />
+                      ) : null}
                       <VegMark type={item.dietary} />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold">
